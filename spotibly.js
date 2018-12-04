@@ -18,10 +18,11 @@ function option (method, url, code, dataString, id) {
 		}
 	}
 	if (dataString) option.body = JSON.stringify(dataString, null, null);
+	console.log(option);
 	return option;
 }
 
-function callback (err, response, body) {
+function callback (err, res, body) {
 	if (err) console.log(err);
 	console.log(body);
 }
@@ -37,6 +38,7 @@ app.get('/spotibly/devices', (req, res) => {
 		var {code} = JSON.parse(data);
 		request(option('GET', 'me/player/devices', code), callback)
 	})
+	res.redirect("/")
 })
 
 app.get('/spotibly/play', (req, res) => {
@@ -45,6 +47,7 @@ app.get('/spotibly/play', (req, res) => {
 		var {code} = JSON.parse(data);
 		request(option('PUT', 'me/player/play?device_id=',  code, {"context_uri" : uri, "position_ms" : 0}, id), callback);
 	});
+	res.redirect("/")
 });
 
 

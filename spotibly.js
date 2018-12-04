@@ -30,6 +30,7 @@ function callback (err, res, body) {
 app.get('/spotibly/callback', (req, res) => {
 	res.send(req.query)
 	fs.writeFileSync("stokens.json", JSON.stringify(req.query, null, "\t"));
+	res.redirect("/")
 });
 
 

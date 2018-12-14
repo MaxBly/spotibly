@@ -17,6 +17,8 @@ var burl = "https://api.spotify.com/v1/",
 	scopes = [
 		'user-read-playback-state',
 		'user-modify-playback-state',
+		'user-read-currently-playing',
+		'user-read-playback-state',
 		'user-read-private',
 		'user-read-email'
 	];
@@ -24,18 +26,19 @@ var burl = "https://api.spotify.com/v1/",
 
 var j = schedule.scheduleJob(`${settings[D].time[1]} ${settings[D].time[0]} * * *`, () => {
 //var j = schedule.scheduleJob(`46 20 * * *`, () => {
-	request.get('http://localhost:7800/spotibly/refresh_token', () => {
-		request.get('http://localhost:7800/spotibly/devices', (e, r, body) => {
-			devices = JSON.parse(body);
-			request.get('http://localhost:7777/cmd/s/vu/0.1.0.1-0-1.1-0-1.1-0-1.1-0-1');
-			request.get('http://localhost:7800/spotibly/play?id='+devices["Raspbly"]+'&&uri='+settings[D].playlist, (err, res, body) => {
-				console.log(res.statusCode);
+	if (settings[D].enabled) {
+		request.get('http://localhost:7800/spotibly/refresh_token', () => {
+			request.get('http://localhost:7800/spotibly/devices', (e, r, body) => {
+				devices = JSON.parse(body);
+				request.get('http://localhost:7777/cmd/s/vu/0.1.0.1-0-1.1-0-1.1-0-1.1-0-1');
+				request.get('http://localhost:7800/spotibly/play?id='+devices["Raspbly"]+'&&uri='+settings[D].playlist, (err, res, body) => {
+					console.log(res.statusCode);
+				})
+				console.log(body)
 			})
-			console.log(body)
 		})
+	}
 })
-})
-
 
 
 function generateRandomString (length) {
@@ -183,6 +186,18 @@ app.get('/spotibly/next', (req, res) => {
 				res.send(response.statusCode)
 			}
 		);
+	})
+})
+
+app.get('/spotibly/nowplaying', (req, res) => {
+	fs.readFile("./tokens.json", (err, data) => {
+		tokens = JSON.parse(data);
+		request(
+			option('GET', 'me/player/currently-playing', tokens.access_token),
+			(err, response, body) => {
+				res.send(body);
+			}
+		)
 	})
 })
 

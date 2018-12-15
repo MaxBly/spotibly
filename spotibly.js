@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/sbin/node
 var request = require ("request");
 var express = require ("express");
 var qs = require("querystring");
@@ -7,8 +7,8 @@ var schedule = require("node-schedule");
 var cookieParser = require("cookie-parser");
 var fs = require("fs");
 var app = express();
-var client = require("./client.json");
-var settings = require("./settings.json");
+var client = require("/prgm/spotibly/client.json");
+var settings = require("/prgm/spotibly/settings.json");
 
 var date = new Date(), D = date.getDay();
 
@@ -89,7 +89,7 @@ app.get("/spotibly/callback", (req, res) => {
 			if (!error && response.statusCode === 200) {
 				var {access_token, refresh_token, expires_in, token_type} = body;
 				tokens = {access_token, refresh_token, expires_in, token_type};
-				fs.writeFileSync("tokens.json", JSON.stringify(tokens, null, "\t"));
+				fs.writeFileSync("/prgm/spotibly/tokens.json", JSON.stringify(tokens, null, "\t"));
 				res.send(JSON.stringify(tokens, null, "\t"));
 			} else {
 				res.redirect('/#' +
@@ -102,7 +102,7 @@ app.get("/spotibly/callback", (req, res) => {
 });
 
 app.get("/spotibly/refresh_token", (req, res) => {
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data)
 		var authOptions = {
 			url: 'https://accounts.spotify.com/api/token',
@@ -121,7 +121,7 @@ app.get("/spotibly/refresh_token", (req, res) => {
 				res.send(JSON.stringify(tokens, null, "\t"));
 				console.log(JSON.stringify(tokens, null, "\t"));
 				tokens = {access_token, refresh_token, token_type, expires_in};
-				fs.writeFileSync('./tokens.json', JSON.stringify(tokens, null, "\t"))
+				fs.writeFileSync('/prgm/spotibly/tokens.json', JSON.stringify(tokens, null, "\t"))
 			}
 		});
 	});
@@ -144,7 +144,7 @@ function option (method, url, code, dataString, id) {
 }
 
 app.get('/spotibly/devices', (req, res) => {
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data);
 		request(option('GET', 'me/player/devices', tokens.access_token), (err, response, body) => {
 			console.log(response.statusCode)
@@ -153,7 +153,7 @@ app.get('/spotibly/devices', (req, res) => {
 				data.devices.forEach((e, i) => {
 					devices[e.name] = e.id;
 				});
-				fs.writeFileSync("devices.json", JSON.stringify(devices, null, "\t"));
+				fs.writeFileSync("/prgm/spotibly/devices.json", JSON.stringify(devices, null, "\t"));
 				res.send(JSON.stringify(devices, null, "\t"));
 			}
 		});
@@ -162,7 +162,7 @@ app.get('/spotibly/devices', (req, res) => {
 
 app.get('/spotibly/play', (req, res) => {
 	var {id, uri} = req.query
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data)
 		request(
 			option('PUT', 'me/player/play?device_id=', tokens.access_token, {"context_uri" : uri, "position_ms" : 0}, id),
@@ -175,7 +175,7 @@ app.get('/spotibly/play', (req, res) => {
 
 app.get('/spotibly/next', (req, res) => {
 	var {id} = req.query
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data)
 		request(
 			option('POST', 'me/player/next?device_id=', tokens.access_token, null, id),

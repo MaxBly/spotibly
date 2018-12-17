@@ -20,7 +20,7 @@
     <div class="container">
       <div id="login">
         <h1>This is an example of the Authorization Code flow</h1>
-        <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+        <a href="/spotibly/login" class="btn btn-primary">Log in with Spotify</a>
       </div>
       <div id="loggedin">
         <div id="user-profile">
@@ -122,7 +122,7 @@
 
           document.getElementById('obtain-new-token').addEventListener('click', function() {
             $.ajax({
-              url: '/refresh_token',
+              url: '/spotibly/refresh_token',
               data: {
                 'refresh_token': refresh_token
               }

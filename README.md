@@ -8,8 +8,8 @@ You'll need to create 3 json files and edit that spotibly.js file too, to use th
 __Edit spotibly.js__
 ```js
 var path = "/prgm/spotibly/", 	//your own spotibly path
-	device = "Raspbly",			//your own spotify device to play
-	owner = "max_bly";			//yout own spotify user name
+    device = "Raspbly",			//your own spotify device to play
+    owner = "max_bly";			//yout own spotify user name
 ```
 
 __Create a client.json file__
@@ -23,50 +23,50 @@ __Create a client.json file__
 __Create a tokens.json file__
 ```json
 {
-    //this file will be filled automaticaly
+    /* this file will be filled automaticaly */
 }
 ```
 
 __Create a settings.json file__
 ```json
 [
-    {   //Sunday
+    {   /* Sunday */
         "enabled": false,
         "time":[11,30],
         "playlist": "<spotify_playlist_or_album_uri>",
         "startSong":"<spotify_track_uri_within_the_playlist_or_album_above>"
     },
-    {   //Monday
+    {   /* Monday */
         "enabled": true,
         "time":[6,30],
         "playlist": "<spotify_playlist_or_album_uri>",
         "startSong":"<spotify_track_uri_within_the_playlist_or_album_above>"
     },
-    {   //Tuesday
+    {   /* Tuesday */
         "enabled": true,
         "time":[7,0],
         "playlist": "<spotify_playlist_or_album_uri>",
         "startSong":"<spotify_track_uri_within_the_playlist_or_album_above>"
     },
-    {   //Wednesday
+    {   /* Wednesday */
         "enabled": true,
         "time":[11,0],
         "playlist": "<spotify_playlist_or_album_uri>",
         "startSong":"<spotify_track_uri_within_the_playlist_or_album_above>"
     },
-    {   //Thursday
+    {   /* Thursday */
         "enabled": true,
         "time":[8,0],
         "playlist": "<spotify_playlist_or_album_uri>",
         "startSong":"<spotify_track_uri_within_the_playlist_or_album_above>"
     },
-    {   //Friday
+    {   /* Friday */
         "enabled": true,
         "time":[6,30],
         "playlist": "<spotify_playlist_or_album_uri>",
         "startSong":"<spotify_track_uri_within_the_playlist_or_album_above>"
     },
-    {   //Saturday
+    {   /* Saturday */
         "enabled": true,
         "time":[11,30],
         "playlist": "<spotify_playlist_or_album_uri>",

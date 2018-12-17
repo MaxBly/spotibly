@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/sbin/node
 var request = require ("request");
 var express = require ("express");
 var qs = require("querystring");
@@ -30,16 +30,17 @@ var burl = "https://api.spotify.com/v1/",
 
 
 var j = schedule.scheduleJob(`${settings[D].time[1]} ${settings[D].time[0]} * * *`, () => {
-//var j = schedule.scheduleJob(`46 20 * * *`, () => {
+	console.log(`[${D}][${settings[D].time[0]}h${settings[D].time[0]}](${settings[D].enabled})`);
 	if (settings[D].enabled) {
 		request.get('http://localhost:7800/spotibly/refresh_token', () => {
-			request.get('http://localhost:7800/spotibly/devices', (e, r, body) => {
-				devices = JSON.parse(body);
+			request.get('http://localhost:7800/spotibly/devices', (e, r, dev) => {
+				devices = JSON.parse(dev);
 				request.get('http://localhost:7777/cmd/s/vu/0.1.0.1-0-1.1-0-1.1-0-1.1-0-1');
-				request.get('http://localhost:7800/spotibly/play?id='+devices["Raspbly"]+'&&uri='+settings[D].playlist, (err, res, body) => {
-					console.log(res.statusCode);
-				});
-				console.log(body);
+				request.get('http://localhost:7800/spotibly/play?id='+devices["Raspbly"]+'&list='+settings[D].playlist+'&song='+settings[D].startSong,
+				(err, res, body) => {
+					request.get('http://localhost:7800/spotibly/shuffle?id='+devices["Raspbly"]);
+					console.log(`(${res.statusCode})\n{${devices}}\n{${settings[D].playlist}\n${settings[D].startSong}}\n`);
+				})
 			});
 		});
 	}
@@ -72,7 +73,7 @@ app.get("/spotibly/login", (req, res) => {
 			state: state
 		})
 	);
-})
+});
 
 app.get("/spotibly/callback", (req, res) => {
 	var {code, state} = req.query || null;
@@ -97,7 +98,7 @@ app.get("/spotibly/callback", (req, res) => {
 			if (!error && response.statusCode === 200) {
 				var {access_token, refresh_token, expires_in, token_type} = body;
 				tokens = {access_token, refresh_token, expires_in, token_type};
-				fs.writeFileSync("tokens.json", JSON.stringify(tokens, null, "\t"));
+				fs.writeFileSync("/prgm/spotibly/tokens.json", JSON.stringify(tokens, null, "\t"));
 				res.send(JSON.stringify(tokens, null, "\t"));
 			} else {
 				res.redirect('/#' +
@@ -110,7 +111,7 @@ app.get("/spotibly/callback", (req, res) => {
 });
 
 app.get("/spotibly/refresh_token", (req, res) => {
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data)
 		var authOptions = {
 			url: 'https://accounts.spotify.com/api/token',
@@ -129,7 +130,7 @@ app.get("/spotibly/refresh_token", (req, res) => {
 				res.send(JSON.stringify(tokens, null, "\t"));
 				console.log(JSON.stringify(tokens, null, "\t"));
 				tokens = {access_token, refresh_token, token_type, expires_in};
-				fs.writeFileSync('./tokens.json', JSON.stringify(tokens, null, "\t"))
+				fs.writeFileSync('/prgm/spotibly/tokens.json', JSON.stringify(tokens, null, "\t"))
 			}
 		});
 	});
@@ -152,7 +153,7 @@ function option (method, url, code, dataString, id) {
 }
 
 app.get('/spotibly/devices', (req, res) => {
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data);
 		request(option('GET', 'me/player/devices', tokens.access_token), (err, response, body) => {
 			console.log(response.statusCode)
@@ -161,7 +162,7 @@ app.get('/spotibly/devices', (req, res) => {
 				data.devices.forEach((e, i) => {
 					devices[e.name] = e.id;
 				});
-				fs.writeFileSync("devices.json", JSON.stringify(devices, null, "\t"));
+				fs.writeFileSync("/prgm/spotibly/devices.json", JSON.stringify(devices, null, "\t"));
 				res.send(JSON.stringify(devices, null, "\t"));
 			}
 		});
@@ -169,11 +170,12 @@ app.get('/spotibly/devices', (req, res) => {
 });
 
 app.get('/spotibly/play', (req, res) => {
-	var {id, uri} = req.query
-	fs.readFile("./tokens.json", (err, data) => {
+	var {id, list, song} = req.query
+	if (!song) song = "";
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data)
 		request(
-			option('PUT', 'me/player/play?device_id=', tokens.access_token, {"context_uri" : uri, "position_ms" : 0}, id),
+			option('PUT', 'me/player/play?device_id=', tokens.access_token, {"context_uri" : list, "offset" : {"uri": song}}, id),
 			(err, response, body) => {
 				res.send(response.statusCode)
 			}
@@ -183,7 +185,7 @@ app.get('/spotibly/play', (req, res) => {
 
 app.get('/spotibly/next', (req, res) => {
 	var {id} = req.query
-	fs.readFile("./tokens.json", (err, data) => {
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
 		tokens = JSON.parse(data)
 		request(
 			option('POST', 'me/player/next?device_id=', tokens.access_token, null, id),
@@ -192,7 +194,7 @@ app.get('/spotibly/next', (req, res) => {
 			}
 		);
 	})
-})
+});
 
 app.get('/spotibly/nowplaying', (req, res) => {
 	fs.readFile("./tokens.json", (err, data) => {
@@ -200,11 +202,46 @@ app.get('/spotibly/nowplaying', (req, res) => {
 		request(
 			option('GET', 'me/player/currently-playing', tokens.access_token),
 			(err, response, body) => {
-				res.send(body);
+				rep = JSON.parse(body);
+				var next = rep.item.duration_ms - rep.progress_ms,
+				listening = {
+					next: next,
+					context: {
+						type: rep.context.type,
+						uri: rep.context.uri
+					},
+					item: {
+						name: rep.item.name,
+						artist: {
+							name: rep.item.artists[0].name,
+							id: rep.item.artists[0].id
+						},
+						album: {
+							name: rep.item.album.name,
+							id: rep.item.album.id,
+							img: rep.item.album.images[1].url
+						},
+						id:  rep.item.id,
+					}
+				}
+				res.send(listening);
 			}
 		)
 	})
-})
+});
+
+app.get('/spotibly/shuffle', (req, res) => {
+	var {id} = req.query
+	fs.readFile("/prgm/spotibly/tokens.json", (err, data) => {
+		tokens = JSON.parse(data)
+		request(
+			option('POST', 'me/player/shuffle?state=true&device_id=', tokens.access_token, null, id),
+			(err, response, body) => {
+				res.send(response.statusCode)
+			}
+		);
+	})
+});
 
 app.get('/spotibly/playlist',  (req, res) => {
 	fs.readFile(path + 'tokens.json', (err, data) => {

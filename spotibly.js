@@ -1,4 +1,8 @@
 #!/usr/sbin/node
+var path = "/prgm/spotibly/", 	//your own spotibly path
+	device = "Raspbly",			//your own spotify device to play
+	owner = "max_bly";			//yout own spotify user name
+
 var request = require ("request");
 var express = require ("express");
 var qs = require("querystring");
@@ -7,7 +11,6 @@ var schedule = require("node-schedule");
 var cookieParser = require("cookie-parser");
 var fs = require("fs");
 var app = express();
-var path = "/prgm/spotibly/";
 var client = require(path + "client.json");
 var settings = require(path + "settings.json");
 var bodyParser = require('body-parser');
@@ -16,7 +19,6 @@ var date = new Date(), D = date.getDay();
 
 var burl = "https://api.spotify.com/v1/",
 	tokens, devices = {}, stateKey = 'spotify_auth_state',
-	device = "Raspbly",
 	scopes = [
 		'user-read-playback-state',
 		'user-modify-playback-state',
@@ -34,7 +36,7 @@ var j = schedule.scheduleJob(`${settings[D].time[1]} ${settings[D].time[0]} * * 
 		request.get('http://localhost:7800/spotibly/refresh_token', () => {
 			request.get('http://localhost:7800/spotibly/devices', (e, r, dev) => {
 				devices = JSON.parse(dev);
-				request.get('http://localhost:7777/cmd/s/vu/0.1.0.1-0-1.1-0-1.1-0-1.1-0-1');
+				request.get('http://localhost:7777/cmd/s/vu/0.1.0.1-0-1.1-0-1.1-0-1.1-0-1'); //this is just a request to start my leds & music app
 				request.get('http://localhost:7800/spotibly/play?id='+devices[device]+'&list='+settings[D].playlist+'&song='+settings[D].startSong,
 				(err, res, body) => {
 					request.get('http://localhost:7800/spotibly/shuffle?id='+devices[device]);
@@ -161,7 +163,6 @@ app.get('/spotibly/devices', (req, res) => {
 				data.devices.forEach((e, i) => {
 					devices[e.name] = e.id;
 				});
-				fs.writeFileSync(path + "devices.json", JSON.stringify(devices, null, "\t"));
 				res.send(JSON.stringify(devices, null, "\t"));
 			}
 		});
@@ -250,7 +251,7 @@ app.get('/spotibly/playlist',  (req, res) => {
 				var results = {playlists: []};
 				var playlists = JSON.parse(body);
 				playlists.items.forEach((e,i) => {
-					if (e.owner.display_name == "max_bly")
+					if (e.owner.display_name == owner)
 					results.playlists.push([e.name, e.uri]);
 				})
 				results.next = playlists.next;

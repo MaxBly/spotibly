@@ -33,12 +33,14 @@ app.use(express.static(__dirname + '/public'))
 app.use('/spotibly/logger', logger.router);
 app.use('/spotibly/api', spotibly.router);
 app.use('/spotibly/settings', set.router);
-
+app.use('/spotibly/job', job.router);
+/* 
 set.getSettings((err, settings) => {
+    console.log(settings[job.day]);
     job.create(settings[job.day]);
 });
 
-
+ */
 
 
 app.listen(7800);

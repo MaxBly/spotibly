@@ -7,12 +7,11 @@ You'll need to create 3 json files and edit that spotibly.js file too, to use th
 
 __Edit spotibly.js__
 ```js
-var path = "/prgm/spotibly/", 	//your own spotibly path
-    device = "Raspbly",			//your own spotify device to play
+var device = "Raspbly",			//your own spotify device to play
     owner = "max_bly";			//yout own spotify user name
 ```
 
-__Create a client.json file__
+__Create a json/client.json file__
 ```json
 {
 	"id":"<your_spotify_client_id>",
@@ -20,14 +19,14 @@ __Create a client.json file__
 	"uri":"<your_spotify_redirect_uri>"
 }
 ```
-__Create a tokens.json file__
+__Create a json/tokens.json file__
 ```json
 {
     /* this file will be filled automaticaly */
 }
 ```
 
-__Create a settings.json file__
+__Create a json/settings.json file__
 ```json
 [
     {   /* Sunday */

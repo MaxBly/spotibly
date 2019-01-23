@@ -4,7 +4,7 @@ var cors = require("cors");
 var cookieParser = require("cookie-parser");
 
 //const
-const device = 'unit-bly';
+const device = 'devices';
 const owner = 'max_bly';
 
 //server

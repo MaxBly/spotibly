@@ -75,4 +75,5 @@ __Create a json/settings.json file__
 ]
 ```
 
-Then you can goto http://localhost:7800/spotibly/logger/login to connect your spotify account
+Then you can goto http://localhost:7800/ to connect your spotify account
+Then you can goto http://localhost:7800/spotibly/settings/pannel to configure settings

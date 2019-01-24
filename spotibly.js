@@ -5,10 +5,11 @@ var cookieParser = require("cookie-parser");
 var http = require('http');
 var socketio = require("socket.io");
 
-
 //const
-const device = 'Raspbly';
-const owner = 'max_bly';
+require('dotenv').config();
+
+const device = process.env.DEVICE;
+const owner = process.env.OWNER;
 
 //server
 var app = express();

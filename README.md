@@ -4,6 +4,7 @@ This is a wake up spotify based project.
 I have installed **Raspotify** on my raspberry pi.
 This app will launch spotify a time a day if enabled, checkout the settings file bellow.
 You'll need to create 3 json files and edit that spotibly.js file too, to use this app.
+You'll also need to launch this deamon a reboot a 00:00
 
 __Edit spotibly.js__
 ```js
@@ -74,5 +75,4 @@ __Create a json/settings.json file__
 ]
 ```
 
-Then you can goto http://localhost:7800/spotibly/login to connect your spotify account
-then you can edit settings on http://localhost:7800/spotibly/settings
+Then you can goto http://localhost:7800/spotibly/logger/login to connect your spotify account

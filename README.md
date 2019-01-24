@@ -6,7 +6,7 @@ This app will launch spotify a time a day if enabled, checkout the settings file
 You'll need to launch this deamon a reboot at 00:00
 
 `npm i` to install dependencies, this will ask you your spotify app ids (`client_id`, `client_secret` and `redirect_uri`) and
-this app needs also your `spotify username` and your `spotify playback device app name`
+this app needs also your `spotify username` and your `spotify playback device sname`
 
 Then you can goto http://localhost:7800/ to connect your spotify account
 Then you can goto http://localhost:7800/spotibly/settings/pannel to configure settings

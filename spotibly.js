@@ -6,7 +6,7 @@ var http = require('http');
 var socketio = require("socket.io");
 
 //const
-const {device, owner} = require('./json/const.json');
+const {device, owner} = require('./json/user.json');
 
 //server
 var app = express();

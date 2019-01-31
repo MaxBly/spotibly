@@ -11,7 +11,7 @@ var p_job = document.getElementById('nextInvoc');
 var settings;
 var playlist;
 
-var days = [
+[
     "Sunday",
     "Monday",
     "Tuesday",
@@ -19,10 +19,8 @@ var days = [
     "Thursday",
     "Friday",
     "Saturday"
-];
-
-l_day.forEach((e, i) => {
-    e.innerHTML = days[i];
+].forEach((e, i) => {
+    l_day[i].innerHTML = e;
 })
 
 socket.on('loggedin', () => {

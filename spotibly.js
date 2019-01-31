@@ -8,9 +8,9 @@ var socketio = require("socket.io");
 //const
 require('dotenv').config();
 
-const device = process.env.DEVICE;
-const owner = process.env.OWNER;
-console.log({device, owner})
+const device = "Raspbly";
+const owner = "max_bly";
+//console.log({device, owner})
 //server
 var app = express();
 var server = http.createServer(app);

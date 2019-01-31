@@ -1,0 +1,35 @@
+<html>
+
+<head>
+    <title>Settings</title>
+    <style>
+        select.hours, select.minutes {
+                width: 40px;
+            }
+            select.playlist, select.startsong {
+                width: 250px;
+            }
+        </style>
+</head>
+
+<body>
+    <% for (var i = 0; i < 7; i++) { %>
+    <div id="d<%= i %>">
+        <fieldset>
+            <legend class="day"></legend>
+            <label for="e<%= i %>">Enabled: </label><input type="checkbox" class="enabled" id="e<%= i %>">
+            <label for="h<%= i %>">Time: </label>
+            <select name="h" class="hours" id="h<%= i %>"></select> : <select name="m" class="minutes" id="m<%= i %>"></select><br />
+            <label for="p<%= i %>">Playlist: </label><select name="p" class="playlist" id="p<%= i %>"></select><br />
+            <label for="s<%= i %>">Startsong: </label><select name="s" class="startsong" id="s<%= i %>"></select><br />
+            <button class="save" id="b<%= i %>">Save</button>
+        </fieldset>
+    </div>
+    <% } %>
+    <button id="reload">Reload</button>
+    <p id="nextInvoc"></p>
+</body>
+
+</html>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/pannel.js"></script>

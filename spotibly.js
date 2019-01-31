@@ -1,303 +1,104 @@
-#!/usr/sbin/node
-var path = "/prgm/spotibly/", 	//your own spotibly path
-	device = "Raspbly",			//your own spotify device to play
-	owner = "max_bly";			//yout own spotify user name
-
-var request = require ("request");
-var express = require ("express");
-var qs = require("querystring");
+//require
+var express = require('express');
 var cors = require("cors");
-var schedule = require("node-schedule");
 var cookieParser = require("cookie-parser");
-var fs = require("fs");
+var http = require('http');
+var socketio = require("socket.io");
+
+//const
+const {device, owner} = require('./json/user.json');
+
+//server
 var app = express();
-var client = require(path + "client.json");
-var settings = require(path + "settings.json");
-var bodyParser = require('body-parser');
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
-var date = new Date(), D = date.getDay();
+var server = http.createServer(app);
+var io = socketio.listen(server);
 
-var burl = "https://api.spotify.com/v1/",
-	tokens, devices = {}, stateKey = 'spotify_auth_state',
-	scopes = [
-		'user-read-playback-state',
-		'user-modify-playback-state',
-		'user-read-currently-playing',
-		'user-read-private',
-		'playlist-read-collaborative',
-		'playlist-read-private',
-		'user-read-email'
-	];
+//libs
+var SpotifyLogger = require('./lib/spotify-logger');
+var Jobber = require('./lib/jobber');
+var SpotiblyApi = require('./lib/spotibly-api');
+var Settings = require('./lib/settings');
 
+//init
+var logger = new SpotifyLogger();
+var job = new Jobber(device);
+var spotibly = new SpotiblyApi(owner);
+var set = new Settings();
 
-var j = schedule.scheduleJob(`${settings[D].time[1]} ${settings[D].time[0]} * * *`, () => {
-	console.log(`[${D}][${settings[D].time[0]}h${settings[D].time[0]}](${settings[D].enabled})`);
-	if (settings[D].enabled) {
-		request.get('http://localhost:7800/spotibly/refresh_token', () => {
-			request.get('http://localhost:7800/spotibly/devices', (e, r, dev) => {
-				devices = JSON.parse(dev);
-				request.get('http://localhost:7777/cmd/s/vu/0.1.0.1-0-1.1-0-1.1-0-1.1-0-1'); //this is just a request to start my leds & music app
-				request.get('http://localhost:7800/spotibly/play?id='+devices[device]+'&list='+settings[D].playlist+'&song='+settings[D].startSong,
-				(err, res, body) => {
-					request.get('http://localhost:7800/spotibly/shuffle?id='+devices[device]);
-					console.log(`(${res.statusCode})\n{${devices}}\n{${settings[D].playlist}\n${settings[D].startSong}}\n`);
-				})
-			});
-		});
-	}
+//init server
+app.use(cors());
+app.use(cookieParser());
+app.use(express.static(__dirname + '/public'));
+app.use('/spotibly/logger', logger.router);
+app.use('/spotibly/api', spotibly.router);
+app.use('/spotibly/settings', set.router);
+app.use('/spotibly/job', job.router);
+
+//job.job();
+set.getSettings((err, settings) => {
+    job.create(settings[job.day]);
+});
+
+io.sockets.on('connection', socket => {
+
+    socket.emit('loggedin');
+
+    socket.on('refresh_token', () => {
+        logger.refreshToken(() => {
+            socket.emit('token_ok');
+        });
+    });
+
+    socket.on('getTracks', ({index, playlist, sel}) => {
+        let uri = playlist.split(':')
+        let id = uri[uri.length - 1];
+        spotibly.getTracks(id, ({tracks}) => {
+            //console.log(tracks)
+            socket.emit('loadTracks', {index, tracks, sel});
+        });
+    });
+
+    socket.on('getPlaylists', () => {
+        spotibly.getPlaylists(owner, data => {
+            socket.emit('loadPlaylists', data);
+        });
+    });
+
+    socket.on('getSettings', () => {
+        set.getSettings((err, settings) => {
+            spotibly.getPlaylists(owner, ({ playlists }) => {
+                settings.forEach((e, index) => {
+                    let uri = e.playlist.split(':');
+                    let id = uri[uri.length - 1];
+                    spotibly.getTracks(id, ({ tracks }) => {
+                        socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
+                    });
+                });
+                socket.emit('loadSettings', { settings, playlists});
+            });
+        });
+    });
+
+    socket.on('saveUpdate', ({index, h, m, enabled, playlist, startSong}) => {
+        set.update(set, index, h, m, enabled, playlist, startSong);
+    });
+
+    socket.on('reload', () => {
+        job.reload(data => {
+            socket.emit('loadNextInvoc', data);
+        });
+    });
+
+    socket.on('getNextInvoc', () => {
+        job.getNextInvoc((err, data) => {
+            if (err) {
+                socket.emit('loadNoJob');
+            } else {
+                socket.emit('loadNextInvoc', data);
+            }
+        });
+    });
 });
 
 
-function generateRandomString (length) {
-	var text = '';
-	var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (var i = 0; i < length; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
-};
-
-app.use(express.static(path + 'public'))
-	.use(cors())
-	.use(cookieParser());
-
-app.get("/spotibly/login", (req, res) => {
-	var state = generateRandomString(16);
-	res.cookie(stateKey, state);
-
-	res.redirect('https://accounts.spotify.com/authorize?' +
-		qs.stringify({
-			response_type: 'code',
-			client_id: client.id,
-			scope: scopes.join(" "),
-			redirect_uri: client.uri,
-			state: state
-		})
-	);
-});
-
-app.get("/spotibly/callback", (req, res) => {
-	var {code, state} = req.query || null;
-	var storedState = req.cookies ? req.cookies[stateKey] : null;
-	if (state === null || state !== storedState) {
-		res.redirect('/#' + qs.stringify({error: 'state_mismatch'}));
-	} else {
-		res.clearCookie(stateKey);
-		var authOptions = {
-			url: 'https://accounts.spotify.com/api/token',
-			form: {
-				code: code,
-				redirect_uri: client.uri,
-				grant_type: 'authorization_code'
-		    	},
-  		  	headers: {
-    			'Authorization': 'Basic ' + (new Buffer(client.id + ':' + client.secret).toString('base64'))
-  		  	},
-  		  	json: true
-		};
-	    request.post(authOptions, (error, response, body) => {
-			if (!error && response.statusCode === 200) {
-				var {access_token, refresh_token} = body;
-				tokens = {access_token, refresh_token};
-				fs.writeFileSync(path + "tokens.json", JSON.stringify(tokens, null, "\t"));
-				res.send(JSON.stringify(tokens, null, "\t"));
-			} else {
-				res.redirect('/#' +
-				qs.stringify({
-					error: 'invalid_token'
-				}));
-			}
-		});
-	}
-});
-
-app.get("/spotibly/refresh_token", (req, res) => {
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data)
-		var authOptions = {
-			url: 'https://accounts.spotify.com/api/token',
-			headers: { 'Authorization': 'Basic ' + (new Buffer(client.id + ':' + client.secret).toString('base64')) },
-			form: {
-				grant_type: 'refresh_token',
-				refresh_token: tokens.refresh_token
-			},
-			json: true
-		};
-		console.log(authOptions)
-		request.post(authOptions, (error, response, body) => {
-    		if (!error && response.statusCode === 200) {
-				var {access_token} = body;
-				var refresh_token = tokens.refresh_token;
-				res.send(JSON.stringify(tokens, null, "\t"));
-				console.log(JSON.stringify(tokens, null, "\t"));
-				tokens = {access_token, refresh_token};
-				fs.writeFileSync(path + 'tokens.json', JSON.stringify(tokens, null, "\t"))
-			}
-		});
-	});
-});
-
-function option (method, url, code, dataString, id) {
-	if (!id) id = "";
-	var option = {
-		url: burl+url+id,
-		method: method,
-		headers: {
-			'Accept' : 'application/json',
-			'Content-Type' : 'application/json',
-			'Authorization' : 'Bearer ' + code
-		}
-	}
-	if (dataString) option.body = JSON.stringify(dataString, null, null);
-	console.log(option);
-	return option;
-}
-
-app.get('/spotibly/devices', (req, res) => {
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data);
-		request(option('GET', 'me/player/devices', tokens.access_token), (err, response, body) => {
-			console.log(response.statusCode)
-			var data = JSON.parse(body);
-			if (response.statusCode == 200) {
-				data.devices.forEach((e, i) => {
-					devices[e.name] = e.id;
-				});
-				res.send(JSON.stringify(devices, null, "\t"));
-			}
-		});
-	});
-});
-
-app.get('/spotibly/play', (req, res) => {
-	var {id, list, song} = req.query
-	if (!song) song = "";
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data)
-		request(
-			option('PUT', 'me/player/play?device_id=', tokens.access_token, {"context_uri" : list, "offset" : (song) ? {"uri": song} : {}}, id),
-			(err, response, body) => {
-				res.send(response.statusCode)
-			}
-		);
-	});
-});
-
-app.get('/spotibly/next', (req, res) => {
-	var {id} = req.query
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data)
-		request(
-			option('POST', 'me/player/next?device_id=', tokens.access_token, null, id),
-			(err, response, body) => {
-				res.send(response.statusCode)
-			}
-		);
-	})
-});
-
-app.get('/spotibly/nowplaying', (req, res) => {
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data);
-		request(
-			option('GET', 'me/player/currently-playing', tokens.access_token),
-			(err, response, body) => {
-				rep = JSON.parse(body);
-				var next = rep.item.duration_ms - rep.progress_ms,
-				listening = {
-					next: next,
-					context: {
-						type: rep.context.type,
-						uri: rep.context.uri
-					},
-					item: {
-						name: rep.item.name,
-						artist: {
-							name: rep.item.artists[0].name,
-							id: rep.item.artists[0].id
-						},
-						album: {
-							name: rep.item.album.name,
-							id: rep.item.album.id,
-							img: rep.item.album.images[1].url
-						},
-						id:  rep.item.id,
-					}
-				}
-				res.send(listening);
-			}
-		)
-	})
-});
-
-app.get('/spotibly/shuffle', (req, res) => {
-	var {id} = req.query
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data)
-		request(
-			option('POST', 'me/player/shuffle?state=true&device_id=', tokens.access_token, null, id),
-			(err, response, body) => {
-				res.send(response.statusCode)
-			}
-		);
-	})
-});
-
-app.get('/spotibly/playlist',  (req, res) => {
-	fs.readFile(path + 'tokens.json', (err, data) => {
-		tokens = JSON.parse(data);
-		request(
-			option('GET', 'me/playlists?limit=50', tokens.access_token), (err, response, body) => {
-				var results = {playlists: []};
-				var playlists = JSON.parse(body);
-				playlists.items.forEach((e,i) => {
-					if (e.owner.display_name == owner)
-					results.playlists.push([e.name, e.uri]);
-				})
-				results.next = playlists.next;
-				res.send(JSON.stringify(results, null, "\t"));
-				//res.send(body);
-
-			}
-		)
-	});
-});
-app.get('/spotibly/tracks',  (req, res) => {
-	var {id} = req.query;
-	fs.readFile(path + 'tokens.json', (err, data) => {
-		tokens = JSON.parse(data);
-		request(
-			option('GET', 'playlists/' + id + '/tracks', tokens.access_token), (err, response, body) => {
-				var results = {tracks: []};
-				var tracks = JSON.parse(body);
-				tracks.items.forEach((e,i) => {
-					results.tracks[i] = {name: e.track.name, uri: e.track.uri, artists: [], album: e.track.album.name};
-					e.track.album.artists.forEach(el => {results.tracks[i].artists.push({name: el.name, uri: el.uri})})
-				})
-				results.next = tracks.next;
-				res.send(JSON.stringify(results, null, "\t"));
-				//res.send(body);
-
-			}
-		)
-	});
-});
-app.get("spotibly/settings", (req, res) => {
-	res.render("")
-});
-app.post("/spotibly/settings/update", urlencodedParser, (req, res) => {
-	var {day, h, m, enabled, list, song} = req.body;
-	fs.readFile(path + "tokens.json", (err, data) => {
-		tokens = JSON.parse(data);
-		tokens[day] = {
-			time: [h,m],
-			enabled: enabled,
-			list: list,
-			song: song
-		};
-		fs.writeFileSync(path + 'tokens.json', tokens);
-	});
-})
-
-
-app.listen(7800);
+server.listen(7800);

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Example of the Authorization Code flow with Spotify</title>
+    <title>Authorization Code with Spotify</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <style type="text/css">
       #login, #loggedin {
@@ -19,8 +19,8 @@
   <body>
     <div class="container">
       <div id="login">
-        <h1>This is an example of the Authorization Code flow</h1>
-        <a href="/spotibly/login" class="btn btn-primary">Log in with Spotify</a>
+        <h1>Login into Spotibly</h1>
+        <a href="/spotibly/logger/login" class="btn btn-primary">Log in with Spotify</a>
       </div>
       <div id="loggedin">
         <div id="user-profile">
@@ -59,7 +59,7 @@
       </dl>
     </script>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script>
       (function() {
@@ -122,7 +122,7 @@
 
           document.getElementById('obtain-new-token').addEventListener('click', function() {
             $.ajax({
-              url: '/spotibly/refresh_token',
+              url: '/spotibly/logger/refresh_token',
               data: {
                 'refresh_token': refresh_token
               }

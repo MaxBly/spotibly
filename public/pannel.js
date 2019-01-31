@@ -6,9 +6,24 @@ var sel_playlist = document.querySelectorAll('.playlist');
 var sel_startsong = document.querySelectorAll('.startsong');
 var cb_enabled = document.querySelectorAll('.enabled');
 var btn_save = document.querySelectorAll('.save');
+var l_day = document.querySelectorAll('.day');
 var p_job = document.getElementById('nextInvoc');
 var settings;
 var playlist;
+
+var days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+];
+
+l_day.forEach((e, i) => {
+    e.innerHTML = days[i];
+})
 
 socket.on('loggedin', () => {
     socket.emit('refresh_token');
@@ -52,6 +67,7 @@ btn_save.forEach((e, index) => {
 document.getElementById('reload').addEventListener('click', () => {
     socket.emit('reload');
 })
+
 
 function fillHours(e, set) {
     for (let i = 0; i < 24; i++) {

@@ -7,8 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node install.js",
+    "postinstall": "node ./lib/install.js",
     "start": "node spotibly.js"
   },
   "repository": {
@@ -25,7 +24,6 @@
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^6.2.0",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
     "fs": "0.0.1-security",

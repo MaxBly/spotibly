@@ -15,12 +15,15 @@
 <body>
     <% for (var i = 0; i < 7; i++) { %>
     <div id="d<%= i %>">
-        <label for="e<%= i %>">enabled: </label><input type="checkbox" class="enabled" id="e<%= i %>">
-        <label for="h<%= i %>">time: </label><select name="h" class="hours" id="h<%= i %>"></select> h:
-        <select name="m" class="minutes" id="m<%= i %>"></select>
-        <label for="p<%= i %>">playlist: </label><select name="p" class="playlist" id="p<%= i %>"></select>
-        <label for="s<%= i %>">startsong: </label><select name="s" class="startsong" id="s<%= i %>"></select>
-        <button class="save" id="b<%= i %>">Save</button>
+        <fieldset>
+            <legend class="day"></legend>
+            <label for="e<%= i %>">Enabled: </label><input type="checkbox" class="enabled" id="e<%= i %>">
+            <label for="h<%= i %>">Time: </label>
+            <select name="h" class="hours" id="h<%= i %>"></select> : <select name="m" class="minutes" id="m<%= i %>"></select><br />
+            <label for="p<%= i %>">Playlist: </label><select name="p" class="playlist" id="p<%= i %>"></select><br />
+            <label for="s<%= i %>">Startsong: </label><select name="s" class="startsong" id="s<%= i %>"></select><br />
+            <button class="save" id="b<%= i %>">Save</button>
+        </fieldset>
     </div>
     <% } %>
     <button id="reload">Reload</button>

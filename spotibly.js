@@ -6,11 +6,8 @@ var http = require('http');
 var socketio = require("socket.io");
 
 //const
-require('dotenv').config();
+const {device, owner} = require('./json/const.json');
 
-const device = "Raspbly";
-const owner = "max_bly";
-//console.log({device, owner})
 //server
 var app = express();
 var server = http.createServer(app);
@@ -39,7 +36,6 @@ app.use('/spotibly/job', job.router);
 
 //job.job();
 set.getSettings((err, settings) => {
-    //console.log(settings[job.day]);
     job.create(settings[job.day]);
 });
 
@@ -56,7 +52,6 @@ io.sockets.on('connection', socket => {
     socket.on('getTracks', ({index, playlist, sel}) => {
         let uri = playlist.split(':')
         let id = uri[uri.length - 1];
-        //console.log({playlist, uri, id});
         spotibly.getTracks(id, ({tracks}) => {
             //console.log(tracks)
             socket.emit('loadTracks', {index, tracks, sel});
@@ -77,10 +72,8 @@ io.sockets.on('connection', socket => {
                     let id = uri[uri.length - 1];
                     spotibly.getTracks(id, ({ tracks }) => {
                         socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
-                        //console.log(tracks)
                     });
                 });
-                //console.log({ settings, playlists});
                 socket.emit('loadSettings', { settings, playlists});
             });
         });

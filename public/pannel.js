@@ -11,7 +11,7 @@ var p_job = document.getElementById('nextInvoc');
 var settings;
 var playlist;
 
-[
+var days = [
     "Sunday",
     "Monday",
     "Tuesday",
@@ -19,7 +19,8 @@ var playlist;
     "Thursday",
     "Friday",
     "Saturday"
-].forEach((e, i) => {
+];
+days.forEach((e, i) => {
     l_day[i].innerHTML = e;
 })
 
@@ -129,5 +130,5 @@ socket.on('loadNoJob', () => {
 
 
 socket.on('loadNextInvoc', ({ year, month, date, day, hours, minutes, seconds }) => {
-    p_job.innerHTML = `${year}/${month + 1}/${date} ${day} ${hours}:${minutes}:${seconds}`;
+    p_job.innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}:${seconds}`;
 });

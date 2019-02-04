@@ -6,7 +6,7 @@ var http = require('http');
 var socketio = require("socket.io");
 
 //const
-const {device, owner} = require('./json/user.json');
+const { device, owner } = require(__dirname + '/json/user.json');
 
 //server
 var app = express();
@@ -14,10 +14,10 @@ var server = http.createServer(app);
 var io = socketio.listen(server);
 
 //libs
-var SpotifyLogger = require('./lib/spotify-logger');
-var Jobber = require('./lib/jobber');
-var SpotiblyApi = require('./lib/spotibly-api');
-var Settings = require('./lib/settings');
+var SpotifyLogger = require(__dirname + '/lib/spotify-logger');
+var Jobber = require(__dirname + '/lib/jobber');
+var SpotiblyApi = require(__dirname + '/lib/spotibly-api');
+var Settings = require(__dirname + '/lib/settings');
 
 //init
 var logger = new SpotifyLogger();
@@ -49,12 +49,12 @@ io.sockets.on('connection', socket => {
         });
     });
 
-    socket.on('getTracks', ({index, playlist, sel}) => {
+    socket.on('getTracks', ({ index, playlist, sel }) => {
         let uri = playlist.split(':')
         let id = uri[uri.length - 1];
-        spotibly.getTracks(id, ({tracks}) => {
+        spotibly.getTracks(id, ({ tracks }) => {
             //console.log(tracks)
-            socket.emit('loadTracks', {index, tracks, sel});
+            socket.emit('loadTracks', { index, tracks, sel });
         });
     });
 
@@ -74,12 +74,12 @@ io.sockets.on('connection', socket => {
                         socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
                     });
                 });
-                socket.emit('loadSettings', { settings, playlists});
+                socket.emit('loadSettings', { settings, playlists });
             });
         });
     });
 
-    socket.on('saveUpdate', ({index, h, m, enabled, playlist, startSong}) => {
+    socket.on('saveUpdate', ({ index, h, m, enabled, playlist, startSong }) => {
         set.update(set, index, h, m, enabled, playlist, startSong);
     });
 

@@ -3,47 +3,44 @@
 <head>
     <title>Settings</title>
     <link rel="stylesheet" href="https://bootswatch.com/4/solar/bootstrap.min.css">
-    <style>
-        select.hours, select.minutes {
-                width: 40px;
-            }
-            select.playlist, select.startsong {
-                width: 250px;
-            }
-        </style>
+    <link rel="stylesheet" href="/pannel.css">
 </head>
 
 <body>
-    <% for (var i = 0; i < 7; i++) { %>
-    <div id="d<%= i %>">
-        <fieldset>
-            <legend class="day"></legend>
-            <div class="form-group">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="enabled custom-control-input" id="e<%= i %>">
-                    <label class="custom-control-label" for="e<%= i %>">Enabled</label>
-                </div>
+    <div class="row">
+        <% for (var i = 0; i < 7; i++) { %>
+        <div class="col-auto" id="d<%= i %>">
+            <fieldset>
+                <legend class="day"></legend>
                 <div class="form-group">
-                    <label class="custom-control-label" for="h<%= i %>">Time: </label>
-                    <select id="h<%= i %>" class="hours custom-select"></select>
-                    <label class="custom-control-label" for="m<%= i %>"> : </label>
-                    <select id="m<%= i %>" class="minutes custom-select"></select>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="enabled custom-control-input" id="e<%= i %>">
+                        <label class="custom-control-label" for="e<%= i %>">Enabled</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control-label" for="h<%= i %>">Time</label> <br />
+                        <select id="h<%= i %>" class="hours custom-select col-sm-4"></select>
+                        <select id="m<%= i %>" class="minutes custom-select col-sm-4"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control-label" for="p<%= i %>">Playlist</label><br />
+                        <select id="p<%= i %>" class="playlist custom-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control-label" for="s<%= i %>">Startsong</label><br />
+                        <select id="s<%= i %>" class="startsong custom-select"></select>
+                    </div>
+                    <button class="save btn btn-primary" id="b<%= i %>">Save</button>
                 </div>
-                <div class="form-group">
-                    <label class="custom-control-label" for="p<%= i %>">Playlist: </label>
-                    <select id="p<%= i %>" class="playlist custom-select"></select>
-                </div>
-                <div class="form-group">
-                    <label class="custom-control-label" for="s<%= i %>">Startsong: </label>
-                    <select id="s<%= i %>" class="startsong custom-select"></select>
-                </div>
-                <button class="save btn" id="b<%= i %>">Save</button>
-            </div>
-        </fieldset>
+            </fieldset>
+        </div>
+        <% } %>
+        <div class="reload form-group">
+            <label class="custom-control-label">Next Invocation :</label><br />
+            <p id="nextInvoc"></p>
+            <button class="btn btn-primary" id="reload">Reload</button>
+        </div>
     </div>
-    <% } %>
-    <button class="btn" id="reload">Reload</button>
-    <p id="nextInvoc"></p>
 </body>
 
 </html>

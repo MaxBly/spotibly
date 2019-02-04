@@ -1,0 +1,23 @@
+
+/* .hours, .minutes {
+        width: 150px;
+} */
+/* .playlist, .startsong, .btn {
+    width: 300px;
+} */
+legend {
+    text-align: center;
+}
+label, p {
+    font-size: 25px;
+}
+/* .enabled {
+    zoom: 10;
+} */
+fieldset, .reload {
+    margin: 15px;
+    /* width: 336px; */
+    padding: 15px;
+    border: 1px solid;
+    border-radius: 10px;
+}

@@ -24,6 +24,8 @@ var Settings = require(__dirname + '/lib/settings');
 var logger = new SpotifyLogger();
 var set = new Settings();
 set.getUser(({ owner, device }) => {
+    console.log({ owner, device })
+
     var spotibly = new SpotiblyApi(owner);
     var job = new Jobber(device);
 

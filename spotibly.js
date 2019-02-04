@@ -7,7 +7,7 @@ var socketio = require("socket.io");
 
 //const
 const { device, owner } = require(__dirname + '/json/user.json');
-console.log({ device, owner });
+console.log({ device, owner, path: __dirname + '/json/user.json' });
 //server
 var app = express();
 var server = http.createServer(app);

@@ -22,10 +22,10 @@ var SpotiblyApi = require('./lib/spotibly-api');
 var Settings = require('./lib/settings');
 
 //init
+var set = new Settings();
 var logger = new SpotifyLogger();
 var job = new Jobber(device);
 var spotibly = new SpotiblyApi(owner);
-var set = new Settings();
 
 //init server
 app.use(cors());
@@ -36,10 +36,10 @@ app.use('/spotibly/api', spotibly.router);
 app.use('/spotibly/settings', set.router);
 app.use('/spotibly/job', job.router);
 
-//job.job();
-set.getSettings((err, settings) => {
+job.job();
+/* set.getSettings((err, settings) => {
     job.create(settings[job.day]);
-});
+}); */
 
 io.sockets.on('connection', socket => {
 

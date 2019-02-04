@@ -36,10 +36,10 @@ app.use('/spotibly/api', spotibly.router);
 app.use('/spotibly/settings', set.router);
 app.use('/spotibly/job', job.router);
 
-job.job();
-/* set.getSettings((err, settings) => {
+//job.job();
+set.getSettings((err, settings) => {
     job.create(settings[job.day]);
-}); */
+});
 
 io.sockets.on('connection', socket => {
 

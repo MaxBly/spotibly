@@ -7,7 +7,7 @@ var socketio = require("socket.io");
 
 //const
 const { device, owner } = require(__dirname + '/json/user.json');
-console.log({ device, owner, path: __dirname + '/json/user.json' });
+
 //server
 var app = express();
 var server = http.createServer(app);
@@ -20,85 +20,88 @@ var SpotiblyApi = require(__dirname + '/lib/spotibly-api');
 var Settings = require(__dirname + '/lib/settings');
 
 //init
+
 var logger = new SpotifyLogger();
-var job = new Jobber(device);
-var spotibly = new SpotiblyApi(owner);
 var set = new Settings();
+set.getUser(({ owner, device }) => {
+    var spotibly = new SpotiblyApi(owner);
+    var job = new Jobber(device);
 
-//init server
-app.use(cors());
-app.use(cookieParser());
-app.use(express.static(__dirname + '/public'));
-app.use('/spotibly/logger', logger.router);
-app.use('/spotibly/api', spotibly.router);
-app.use('/spotibly/settings', set.router);
-app.use('/spotibly/job', job.router);
+    //init server
+    app.use(cors());
+    app.use(cookieParser());
+    app.use(express.static(__dirname + '/public'));
+    app.use('/spotibly/logger', logger.router);
+    app.use('/spotibly/api', spotibly.router);
+    app.use('/spotibly/settings', set.router);
+    app.use('/spotibly/job', job.router);
 
-job.job();
-/* set.getSettings((err, settings) => {
-    job.create(settings[job.day]);
-}); */
+    job.job();
+    /* set.getSettings((err, settings) => {
+        job.create(settings[job.day]);
+    }); */
 
-io.sockets.on('connection', socket => {
+    io.sockets.on('connection', socket => {
 
-    socket.emit('loggedin');
+        socket.emit('loggedin');
 
-    socket.on('refresh_token', () => {
-        logger.refreshToken(() => {
-            socket.emit('token_ok');
+        socket.on('refresh_token', () => {
+            logger.refreshToken(() => {
+                socket.emit('token_ok');
+            });
         });
-    });
 
-    socket.on('getTracks', ({ index, playlist, sel }) => {
-        let uri = playlist.split(':')
-        let id = uri[uri.length - 1];
-        spotibly.getTracks(id, ({ tracks }) => {
-            //console.log(tracks)
-            socket.emit('loadTracks', { index, tracks, sel });
+        socket.on('getTracks', ({ index, playlist, sel }) => {
+            let uri = playlist.split(':')
+            let id = uri[uri.length - 1];
+            spotibly.getTracks(id, ({ tracks }) => {
+                //console.log(tracks)
+                socket.emit('loadTracks', { index, tracks, sel });
+            });
         });
-    });
 
-    socket.on('getPlaylists', () => {
-        spotibly.getPlaylists(owner, data => {
-            socket.emit('loadPlaylists', data);
+        socket.on('getPlaylists', () => {
+            spotibly.getPlaylists(owner, data => {
+                socket.emit('loadPlaylists', data);
+            });
         });
-    });
 
-    socket.on('getSettings', () => {
-        set.getSettings((err, settings) => {
-            spotibly.getPlaylists(owner, ({ playlists }) => {
-                settings.forEach((e, index) => {
-                    let uri = e.playlist.split(':');
-                    let id = uri[uri.length - 1];
-                    spotibly.getTracks(id, ({ tracks }) => {
-                        socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
+        socket.on('getSettings', () => {
+            set.getSettings((err, settings) => {
+                spotibly.getPlaylists(owner, ({ playlists }) => {
+                    settings.forEach((e, index) => {
+                        let uri = e.playlist.split(':');
+                        let id = uri[uri.length - 1];
+                        spotibly.getTracks(id, ({ tracks }) => {
+                            socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
+                        });
                     });
+                    socket.emit('loadSettings', { settings, playlists });
                 });
-                socket.emit('loadSettings', { settings, playlists });
+            });
+        });
+
+        socket.on('saveUpdate', ({ index, h, m, enabled, playlist, startSong }) => {
+            set.update(set, index, h, m, enabled, playlist, startSong);
+        });
+
+        socket.on('reload', () => {
+            job.reload(data => {
+                socket.emit('loadNextInvoc', data);
+            });
+        });
+
+        socket.on('getNextInvoc', () => {
+            job.getNextInvoc((err, data) => {
+                if (err) {
+                    socket.emit('loadNoJob');
+                } else {
+                    socket.emit('loadNextInvoc', data);
+                }
             });
         });
     });
 
-    socket.on('saveUpdate', ({ index, h, m, enabled, playlist, startSong }) => {
-        set.update(set, index, h, m, enabled, playlist, startSong);
-    });
 
-    socket.on('reload', () => {
-        job.reload(data => {
-            socket.emit('loadNextInvoc', data);
-        });
-    });
-
-    socket.on('getNextInvoc', () => {
-        job.getNextInvoc((err, data) => {
-            if (err) {
-                socket.emit('loadNoJob');
-            } else {
-                socket.emit('loadNextInvoc', data);
-            }
-        });
-    });
 });
-
-
 server.listen(7800);

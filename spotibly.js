@@ -7,7 +7,7 @@ var socketio = require("socket.io");
 
 //const
 const { device, owner } = require(__dirname + '/json/user.json');
-
+console.log({ device, owner });
 //server
 var app = express();
 var server = http.createServer(app);
@@ -34,10 +34,10 @@ app.use('/spotibly/api', spotibly.router);
 app.use('/spotibly/settings', set.router);
 app.use('/spotibly/job', job.router);
 
-//job.job();
-set.getSettings((err, settings) => {
+job.job();
+/* set.getSettings((err, settings) => {
     job.create(settings[job.day]);
-});
+}); */
 
 io.sockets.on('connection', socket => {
 

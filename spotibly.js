@@ -1,9 +1,9 @@
 //require
-var express = require('express');
-var cors = require("cors");
-var cookieParser = require("cookie-parser");
-var http = require('http');
-var socketio = require("socket.io");
+const express = require('express');
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const http = require('http');
+const socketio = require("socket.io");
 
 //const
 const device = "Raspbly";
@@ -11,21 +11,21 @@ const owner = "max_bly";
 
 
 //server
-var app = express();
-var server = http.createServer(app);
-var io = socketio.listen(server);
+const app = express();
+const server = http.createServer(app);
+const io = socketio.listen(server);
 
 //libs
-var SpotifyLogger = require('./lib/spotify-logger');
-var Jobber = require('./lib/jobber');
-var SpotiblyApi = require('./lib/spotibly-api');
-var Settings = require('./lib/settings');
+const SpotifyLogger = require('./lib/spotify-logger');
+const Jobber = require('./lib/jobber');
+const SpotiblyApi = require('./lib/spotibly-api');
+const Settings = require('./lib/settings');
 
 //init
-var set = new Settings();
-var logger = new SpotifyLogger();
-var job = new Jobber(device);
-var spotibly = new SpotiblyApi(owner);
+const set = new Settings();
+const logger = new SpotifyLogger();
+const job = new Jobber(device);
+const spotibly = new SpotiblyApi(owner);
 
 //init server
 app.use(cors());
@@ -45,8 +45,8 @@ io.sockets.on('connection', socket => {
 
     socket.emit('loggedin');
 
-    socket.on('refresh_token', () => {
-        logger.refreshToken(() => {
+    socket.on('refresh_token', _ => {
+        logger.refreshToken(_ => {
             socket.emit('token_ok');
         });
     });
@@ -60,13 +60,13 @@ io.sockets.on('connection', socket => {
         });
     });
 
-    socket.on('getPlaylists', () => {
+    socket.on('getPlaylists', _ => {
         spotibly.getPlaylists(owner, data => {
             socket.emit('loadPlaylists', data);
         });
     });
 
-    socket.on('getSettings', () => {
+    socket.on('getSettings', _ => {
         set.getSettings((err, settings) => {
             spotibly.getPlaylists(owner, ({ playlists }) => {
                 settings.forEach((e, index) => {
@@ -85,13 +85,13 @@ io.sockets.on('connection', socket => {
         set.update(set, index, h, m, enabled, playlist, startSong);
     });
 
-    socket.on('reload', () => {
-        job.reload(data => {
+    socket.on('reload', _ => {
+        job.reload((err, data) => {
             socket.emit('loadNextInvoc', data);
         });
     });
 
-    socket.on('getNextInvoc', () => {
+    socket.on('getNextInvoc', _ => {
         job.getNextInvoc((err, data) => {
             if (err) {
                 socket.emit('loadNoJob');

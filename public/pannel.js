@@ -1,17 +1,15 @@
-var socket = io.connect('http://192.168.1.92:7800');
+const socket = io.connect('http://192.168.1.92:7800');
 
-var sel_minutes = document.querySelectorAll('.minutes');
-var sel_hours = document.querySelectorAll('.hours');
-var sel_playlist = document.querySelectorAll('.playlist');
-var sel_startsong = document.querySelectorAll('.startsong');
-var cb_enabled = document.querySelectorAll('.enabled');
-var btn_save = document.querySelectorAll('.save');
-var l_day = document.querySelectorAll('.day');
-var p_job = document.getElementById('nextInvoc');
-var settings;
-var playlist;
+const sel_minutes = document.querySelectorAll('.minutes');
+const sel_hours = document.querySelectorAll('.hours');
+const sel_playlist = document.querySelectorAll('.playlist');
+const sel_startsong = document.querySelectorAll('.startsong');
+const cb_enabled = document.querySelectorAll('.enabled');
+const btn_save = document.querySelectorAll('.save');
+const l_day = document.querySelectorAll('.day');
+const p_job = document.getElementById('nextInvoc');
 
-var days = [
+const days = [
     "Sunday",
     "Monday",
     "Tuesday",
@@ -20,6 +18,7 @@ var days = [
     "Friday",
     "Saturday"
 ];
+
 days.forEach((e, i) => {
     l_day[i].innerHTML = e;
 })
@@ -107,7 +106,7 @@ function fillTracks(e, tracks, sel) {
 }
 
 function updateTracks(index) {
-    var opt = sel_playlist[index].options[sel_playlist[index].selectedIndex];
+    let opt = sel_playlist[index].options[sel_playlist[index].selectedIndex];
     let playlist = opt.id;
     let sel = "";
     sel_startsong[index].innerHTML = null;
@@ -116,11 +115,11 @@ function updateTracks(index) {
 }
 
 function saveUpdate(index) {
-    var enabled = cb_enabled[index].checked;
-    var h = sel_hours[index].value;
-    var m = sel_minutes[index].value;
-    var playlist = sel_playlist[index].options[sel_playlist[index].selectedIndex].id;
-    var startSong = sel_startsong[index].options[sel_startsong[index].selectedIndex].id;
+    let enabled = cb_enabled[index].checked;
+    let h = sel_hours[index].value;
+    let m = sel_minutes[index].value;
+    let playlist = sel_playlist[index].options[sel_playlist[index].selectedIndex].id;
+    let startSong = sel_startsong[index].options[sel_startsong[index].selectedIndex].id;
     socket.emit('saveUpdate', ({ index, h, m, enabled, playlist, startSong }));
 }
 
@@ -129,6 +128,6 @@ socket.on('loadNoJob', () => {
 });
 
 
-socket.on('loadNextInvoc', ({ year, month, date, day, hours, minutes, seconds }) => {
-    p_job.innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}:${seconds}`;
+socket.on('loadNextInvoc', ({ year, month, date, day, hours, minutes }) => {
+    p_job.innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}`;
 });

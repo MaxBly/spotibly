@@ -37,11 +37,13 @@ app.use('/spotibly/settings', set.router);
 app.use('/spotibly/job', job.router);
 
 //job.job();
-/* set.getSettings((err, settings) => {
-    job.create(settings[job.day]);
-});
- */
-job.daily();
+/* 
+let currentDay = new Date().getDay();
+set.getSettings((err, settings) => {
+    job.create(settings[currentDay]);
+}); */
+
+job.reload();
 
 io.sockets.on('connection', socket => {
 

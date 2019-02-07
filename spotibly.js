@@ -43,7 +43,7 @@ set.getSettings((err, settings) => {
     job.create(settings[currentDay]);
 }); */
 
-job.reload();
+job.daily();
 
 io.sockets.on('connection', socket => {
 
@@ -91,7 +91,13 @@ io.sockets.on('connection', socket => {
 
     socket.on('reload', _ => {
         job.reload((err, data) => {
-            socket.emit('loadNextInvoc', data);
+            console.log('callback')
+            if (err) {
+                socket.emit('loadNoJob');
+            } else {
+                socket.emit('loadNextInvoc', data);
+                console.log('loadNextInvoc', data);
+            }
         });
     });
 
@@ -101,6 +107,7 @@ io.sockets.on('connection', socket => {
                 socket.emit('loadNoJob');
             } else {
                 socket.emit('loadNextInvoc', data);
+                console.log('loadNextInvoc', data);
             }
         });
     });

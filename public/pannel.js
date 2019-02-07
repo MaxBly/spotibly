@@ -1,4 +1,4 @@
-const socket = io.connect('http://localhost:7800');
+const socket = io.connect('http://192.168.1.92:7800');
 
 const sel_minutes = document.querySelectorAll('.minutes');
 const sel_hours = document.querySelectorAll('.hours');
@@ -49,6 +49,16 @@ socket.on('loadTracks', ({ index, tracks, startSong }) => {
     fillTracks(sel_startsong[index], tracks, startSong);
 });
 
+socket.on('loadNoJob', () => {
+    p_job.innerHTML = 'no job';
+});
+
+
+socket.on('loadNextInvoc', ({ year, month, date, day, hours, minutes }) => {
+    console.log('loadNextInvoc', { year, month, date, day, hours, minutes });
+    p_job.innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}`;
+});
+
 sel_playlist.forEach((e, index) => {
     e.addEventListener('change', () => {
         console.log('change')
@@ -68,8 +78,9 @@ document.getElementById('reload').addEventListener('click', () => {
 
 
 function fillHours(e, set) {
+    e.innerHTML = "";
     for (let i = 0; i < 24; i++) {
-        let opt = document.createElement('option')
+        let opt = document.createElement('option');
         if (i == set.time[0]) opt.selected = true;
         opt.innerText = i;
         e.append(opt);
@@ -77,8 +88,9 @@ function fillHours(e, set) {
 }
 
 function fillMinutes(e, set) {
+    e.innerHTML = "";
     for (let i = 0; i < 60; i += 5) {
-        let opt = document.createElement('option')
+        let opt = document.createElement('option');
         if (i == set.time[1]) opt.selected = true;
         opt.innerText = i;
         e.append(opt);
@@ -86,8 +98,9 @@ function fillMinutes(e, set) {
 }
 
 function fillPlaylists(e, playlists, sel) {
+    e.innerHTML = "";
     playlists.forEach((list, i) => {
-        let opt = document.createElement('option')
+        let opt = document.createElement('option');
         opt.innerText = list[0];
         opt.id = list[1];
         if (sel == opt.id) opt.selected = true;
@@ -96,8 +109,9 @@ function fillPlaylists(e, playlists, sel) {
 }
 
 function fillTracks(e, tracks, sel) {
+    e.innerHTML = "";
     tracks.forEach(track => {
-        let opt = document.createElement('option')
+        let opt = document.createElement('option');
         opt.innerText = `${track.artists[0].name} - ${track.name}`;
         opt.id = track.uri;
         if (sel == opt.id) opt.selected = true;
@@ -122,12 +136,3 @@ function saveUpdate(index) {
     let startSong = sel_startsong[index].options[sel_startsong[index].selectedIndex].id;
     socket.emit('saveUpdate', ({ index, h, m, enabled, playlist, startSong }));
 }
-
-socket.on('loadNoJob', () => {
-    p_job.innerHTML = 'no job';
-});
-
-
-socket.on('loadNextInvoc', ({ year, month, date, day, hours, minutes }) => {
-    p_job.innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}`;
-});

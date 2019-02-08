@@ -36,14 +36,8 @@ app.use('/spotibly/api', spotibly.router);
 app.use('/spotibly/settings', set.router);
 app.use('/spotibly/job', job.router);
 
-//job.job();
-/* 
-let currentDay = new Date().getDay();
-set.getSettings((err, settings) => {
-    job.create(settings[currentDay]);
-}); */
 
-job.daily();
+job.loadAll();
 
 io.sockets.on('connection', socket => {
 
@@ -86,31 +80,28 @@ io.sockets.on('connection', socket => {
     });
 
     socket.on('saveUpdate', ({ index, h, m, enabled, playlist, startSong }) => {
-        set.update(set, index, h, m, enabled, playlist, startSong);
+        set.update(set, index, h, m, enabled, playlist, startSong, (err, day) => {
+            job.reload(day, (err, data) => {
+                socket.emit('reloadOk', day);
+                console.log('reloadOk', day);
+            });
+        });
     });
 
-    socket.on('reload', _ => {
-        job.reload((err, data) => {
-            console.log('callback')
+
+    socket.on('getNextInvoc', day => {
+        console.log('getNextInvoc', day);
+
+        job.getNextInvoc(day, (err, data) => {
             if (err) {
-                socket.emit('loadNoJob');
+                socket.emit('loadNoJob', day);
             } else {
-                socket.emit('loadNextInvoc', data);
-                console.log('loadNextInvoc', data);
+                socket.emit('loadNextInvoc', { i: day, data });
+                console.log('loadNextInvoc', { i: day, data });
             }
         });
     });
 
-    socket.on('getNextInvoc', _ => {
-        job.getNextInvoc((err, data) => {
-            if (err) {
-                socket.emit('loadNoJob');
-            } else {
-                socket.emit('loadNextInvoc', data);
-                console.log('loadNextInvoc', data);
-            }
-        });
-    });
 });
 
 

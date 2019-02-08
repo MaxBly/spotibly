@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <div class="row">
+    <div class="row justify-content-items">
         <% for (var i = 0; i < 7; i++) { %>
         <div class="col-auto" id="d<%= i %>">
             <fieldset>
@@ -30,16 +30,12 @@
                         <label class="custom-control-label" for="s<%= i %>">Startsong</label><br />
                         <select id="s<%= i %>" class="startsong custom-select"></select>
                     </div>
+                    <p class="next" id="n<%= i %>"></p>
                     <button class="save btn btn-primary" id="b<%= i %>">Save</button>
                 </div>
             </fieldset>
         </div>
         <% } %>
-        <div class="reload form-group">
-            <label class="custom-control-label">Next Invocation :</label><br />
-            <p id="nextInvoc"></p>
-            <button class="btn btn-primary" id="reload">Reload</button>
-        </div>
     </div>
 </body>
 

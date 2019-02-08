@@ -1,4 +1,4 @@
-const socket = io.connect('http://192.168.1.92:7800');
+const socket = io.connect('http://localhost:7800');
 
 const sel_minutes = document.querySelectorAll('.minutes');
 const sel_hours = document.querySelectorAll('.hours');
@@ -7,7 +7,7 @@ const sel_startsong = document.querySelectorAll('.startsong');
 const cb_enabled = document.querySelectorAll('.enabled');
 const btn_save = document.querySelectorAll('.save');
 const l_day = document.querySelectorAll('.day');
-const p_job = document.getElementById('nextInvoc');
+const p_job = document.querySelectorAll('.next');
 
 const days = [
     "Sunday",
@@ -30,7 +30,6 @@ socket.on('loggedin', () => {
 
 socket.on('token_ok', () => {
     socket.emit('getSettings');
-    socket.emit('getNextInvoc');
 });
 
 socket.on('loadSettings', ({ settings, playlists }) => {
@@ -40,6 +39,7 @@ socket.on('loadSettings', ({ settings, playlists }) => {
         fillHours(sel_hours[i], e);
         fillPlaylists(sel_playlist[i], playlists, e.playlist);
         cb_enabled[i].checked = e.enabled;
+        socket.emit('getNextInvoc', i);
     });
     console.log('loadSettings');
 });
@@ -49,14 +49,20 @@ socket.on('loadTracks', ({ index, tracks, startSong }) => {
     fillTracks(sel_startsong[index], tracks, startSong);
 });
 
-socket.on('loadNoJob', () => {
-    p_job.innerHTML = 'no job';
+socket.on('relaodOk', day => {
+    console.log('reloadOk', day);
+    socket.emit('getNextInvoc', day);
+});
+
+socket.on('loadNoJob', i => {
+    p_job[i].innerHTML = 'no job';
 });
 
 
-socket.on('loadNextInvoc', ({ year, month, date, day, hours, minutes }) => {
-    console.log('loadNextInvoc', { year, month, date, day, hours, minutes });
-    p_job.innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}`;
+socket.on('loadNextInvoc', ({ i, data }) => {
+    console.log('loadNextInvoc', { i, data });
+    let { year, month, date, day, hours, minutes } = data;
+    p_job[i].innerHTML = `${year}/${month + 1}/${date} ${days[day]} ${hours}:${minutes}`;
 });
 
 sel_playlist.forEach((e, index) => {
@@ -71,11 +77,6 @@ btn_save.forEach((e, index) => {
         saveUpdate(index);
     });
 });
-
-document.getElementById('reload').addEventListener('click', () => {
-    socket.emit('reload');
-})
-
 
 function fillHours(e, set) {
     e.innerHTML = "";

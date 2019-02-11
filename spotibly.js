@@ -9,7 +9,6 @@ const socketio = require("socket.io");
 const device = "Raspbly";
 const owner = "max_bly";
 
-
 //server
 const app = express();
 const server = http.createServer(app);

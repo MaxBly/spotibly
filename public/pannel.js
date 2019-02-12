@@ -1,5 +1,5 @@
-const socket = io.connect('http://localhost:7800')
-//const socket = io.connect('http://192.168.1.92:7800');
+//const socket = io.connect('http://localhost:7800')
+const socket = io.connect('http://192.168.1.92:7800');
 
 const sel_minutes = document.querySelectorAll('.minutes');
 const sel_hours = document.querySelectorAll('.hours');

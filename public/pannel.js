@@ -1,4 +1,5 @@
-const socket = io.connect('http://192.168.1.92:7800');
+const socket = io.connect('http://localhost:7800')
+//const socket = io.connect('http://192.168.1.92:7800');
 
 const sel_minutes = document.querySelectorAll('.minutes');
 const sel_hours = document.querySelectorAll('.hours');
@@ -8,6 +9,7 @@ const cb_enabled = document.querySelectorAll('.enabled');
 const btn_save = document.querySelectorAll('.save');
 const l_day = document.querySelectorAll('.day');
 const p_job = document.querySelectorAll('.next');
+const p_dev = document.getElementById('devices');
 
 const days = [
     "Sunday",
@@ -32,8 +34,9 @@ socket.on('token_ok', () => {
     socket.emit('getSettings');
 });
 
-socket.on('loadSettings', ({ settings, playlists }) => {
-    console.log({ settings, playlists });
+socket.on('loadSettings', ({ settings, playlists, devices }) => {
+    console.log({ settings, playlists, devices });
+    p_dev.innerHTML = Object.keys(devices).join('  --  ');
     settings.forEach((e, i) => {
         fillMinutes(sel_minutes[i], e);
         fillHours(sel_hours[i], e);
@@ -57,6 +60,8 @@ socket.on('relaodOk', day => {
 socket.on('loadNoJob', i => {
     p_job[i].innerHTML = 'no job';
 });
+
+
 
 
 socket.on('loadNextInvoc', ({ i, data }) => {

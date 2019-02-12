@@ -65,15 +65,17 @@ io.sockets.on('connection', socket => {
 
     socket.on('getSettings', _ => {
         set.getSettings((err, settings) => {
-            spotibly.getPlaylists(owner, ({ playlists }) => {
-                settings.forEach((e, index) => {
-                    let uri = e.playlist.split(':');
-                    let id = uri[uri.length - 1];
-                    spotibly.getTracks(id, ({ tracks }) => {
-                        socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
+            spotibly.getDevices(devices => {
+                spotibly.getPlaylists(owner, ({ playlists }) => {
+                    settings.forEach((e, index) => {
+                        let uri = e.playlist.split(':');
+                        let id = uri[uri.length - 1];
+                        spotibly.getTracks(id, ({ tracks }) => {
+                            socket.emit('loadTracks', { index, tracks, startSong: e.startSong });
+                        });
                     });
+                    socket.emit('loadSettings', { settings, playlists, devices });
                 });
-                socket.emit('loadSettings', { settings, playlists });
             });
         });
     });
@@ -86,7 +88,6 @@ io.sockets.on('connection', socket => {
             });
         });
     });
-
 
     socket.on('getNextInvoc', day => {
         console.log('getNextInvoc', day);

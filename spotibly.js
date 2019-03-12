@@ -51,7 +51,7 @@ io.sockets.on('connection', socket => {
     socket.on('getTracks', ({ index, playlist, sel }) => {
         let uri = playlist.split(':')
         let id = uri[uri.length - 1];
-        spotibly.getTracks(id, ({ tracks }) => {
+        spotibly.getTracks(id).then(tracks => {
             //console.log(tracks)
             socket.emit('loadTracks', { index, tracks, sel });
         });

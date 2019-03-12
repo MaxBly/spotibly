@@ -6,7 +6,7 @@ const http = require('http');
 const socketio = require("socket.io");
 
 //const
-const device = "Raspbly";
+const device = "UnitBlyK";
 const owner = "max_bly";
 
 //server
@@ -52,9 +52,9 @@ io.sockets.on('connection', socket => {
         let uri = playlist.split(':')
         let id = uri[uri.length - 1];
         spotibly.getTracks(id).then(tracks => {
-            //console.log(tracks)
+            console.log(tracks)
             socket.emit('loadTracks', { index, tracks, sel });
-        });
+        }).catch(console.error);
     });
 
     socket.on('getPlaylists', _ => {

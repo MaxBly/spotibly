@@ -1,4 +1,4 @@
-//const socket = io.connect('http://localhost:7800')
+// const socket = io.connect('http://localhost:7800')
 const socket = io.connect('http://192.168.1.92:7800');
 
 const sel_minutes = document.querySelectorAll('.minutes');
@@ -60,9 +60,6 @@ socket.on('relaodOk', day => {
 socket.on('loadNoJob', i => {
     p_job[i].innerHTML = 'no job';
 });
-
-
-
 
 socket.on('loadNextInvoc', ({ i, data }) => {
     console.log('loadNextInvoc', { i, data });
